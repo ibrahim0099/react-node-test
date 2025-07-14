@@ -112,15 +112,27 @@ const AuthProvider = ({ children }) => {
    * Clears authentication data and resets state
    */
   const handleLogout = () => {
+    // Record logout time in userLogs
+    const email = localStorage.getItem("email");
+    const token = localStorage.getItem("token");
+    if (email && token) {
+      const logs = JSON.parse(localStorage.getItem("userLogs") || "[]");
+      // Find the latest log for this user with this token and no logoutTime
+      const logIndex = logs.findIndex(
+        (log) => log.username === email && log.tokenName && token.startsWith(log.tokenName.replace("...", "")) && !log.logoutTime
+      );
+      if (logIndex !== -1) {
+        logs[logIndex].logoutTime = new Date().toISOString();
+        localStorage.setItem("userLogs", JSON.stringify(logs));
+      }
+    }
     // Clear all auth-related data from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userId");
     localStorage.removeItem("email");
-    
     // Reset user state
     setUser(null);
-    
     // In a real app, we might also invalidate the token on the server
     console.log("User logged out");
   };
