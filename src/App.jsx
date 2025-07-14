@@ -86,9 +86,36 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 };
 
 /**
+ * Public Route Component
+ * 
+ * Redirects authenticated users to their appropriate dashboard
+ * and shows login/register for unauthenticated users
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render when not authenticated
+ */
+const PublicRoute = ({ children }) => {
+  const { user } = useAuth();
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!user || !!localStorage.getItem("token");
+  
+  // If authenticated, redirect to appropriate dashboard
+  if (isAuthenticated) {
+    const userRole = localStorage.getItem("userRole");
+    const redirectPath = userRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
+    return <Navigate to={redirectPath} replace />;
+  }
+  
+  // User is not authenticated, show the public content
+  return children;
+};
+
+/**
  * Main App Component
  * 
  * Defines the application's routing structure and wraps the app with necessary providers.
+ * Implements Task 1: Show login/register before landing page for unauthenticated users.
  */
 function App() {
   return (
@@ -100,12 +127,47 @@ function App() {
             
             <main className="flex-grow">
               <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Landing />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                {/* Public Routes - Only accessible when NOT authenticated */}
+                <Route 
+                  path="/" 
+                  element={
+                    <PublicRoute>
+                      <Landing />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/signup" 
+                  element={
+                    <PublicRoute>
+                      <Signup />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/forgot-password" 
+                  element={
+                    <PublicRoute>
+                      <ForgotPassword />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/reset-password" 
+                  element={
+                    <PublicRoute>
+                      <ResetPassword />
+                    </PublicRoute>
+                  } 
+                />
                 
                 {/* Protected Admin Routes */}
                 <Route 
@@ -215,8 +277,8 @@ function App() {
                   } 
                 />
                 
-                {/* Fallback Route - Redirect to landing page */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Fallback Route - Redirect to login for unauthenticated users */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </main>
             

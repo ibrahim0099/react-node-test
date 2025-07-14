@@ -5,7 +5,7 @@ import { FaUserCircle, FaTasks } from "react-icons/fa";
 import TaskList from "../tasks/TaskList";
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const hideProfileRoutes = ["/", "/login", "/signup"];
@@ -15,6 +15,9 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const taskListRef = useRef(null);
   const [profile, setProfile] = useState({ name: "User", profilePic: "", role: "user" });
+
+  // Check if user is authenticated
+  const isAuthenticated = !!user || !!localStorage.getItem("token");
 
   useEffect(() => {
     // Check if user is in admin or user portal
@@ -97,75 +100,78 @@ const Navbar = () => {
         TaskFlow
       </Link>
 
-      <div className="flex items-center gap-4">
-        {/* Task List Button (Hidden on Landing/Login/Signup) */}
-        {!hideProfileRoutes.includes(location.pathname) && (
-          <div className="relative" ref={taskListRef}>
-            <button
-              onClick={() => setTaskListOpen(!taskListOpen)}
-              className="flex items-center bg-white text-blue-600 font-medium px-4 py-2 rounded-lg shadow-md 
-                         hover:bg-blue-700 hover:text-white transition-all focus:outline-none mr-2"
-            >
-              <FaTasks className="text-xl mr-2" />
-              <span>Tasks</span>
-            </button>
+      {/* Only show task list and profile buttons if user is authenticated */}
+      {isAuthenticated && (
+        <div className="flex items-center gap-4">
+          {/* Task List Button (Hidden on Landing/Login/Signup) */}
+          {!hideProfileRoutes.includes(location.pathname) && (
+            <div className="relative" ref={taskListRef}>
+              <button
+                onClick={() => setTaskListOpen(!taskListOpen)}
+                className="flex items-center bg-white text-blue-600 font-medium px-4 py-2 rounded-lg shadow-md 
+                           hover:bg-blue-700 hover:text-white transition-all focus:outline-none mr-2"
+              >
+                <FaTasks className="text-xl mr-2" />
+                <span>Tasks</span>
+              </button>
 
-            {/* Task List Dropdown */}
-            {taskListOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg overflow-hidden z-10">
-                <TaskList />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Profile Button (Hidden on Landing/Login/Signup) */}
-        {!hideProfileRoutes.includes(location.pathname) && (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center bg-white text-blue-600 font-medium px-4 py-2 rounded-lg shadow-md 
-                         hover:bg-blue-700 hover:text-white transition-all focus:outline-none"
-            >
-              {profile.profilePic ? (
-                <img
-                  src={profile.profilePic}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover mr-2"
-                />
-              ) : (
-                <FaUserCircle className="text-2xl mr-2" />
+              {/* Task List Dropdown */}
+              {taskListOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg overflow-hidden z-10">
+                  <TaskList />
+                </div>
               )}
-              <span>{profile.name}</span> {/* Display user's name */}
-            </button>
+            </div>
+          )}
 
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg overflow-hidden z-10">
-                <ul className="text-gray-700">
-                  <li>
-                    <Link
-                      to={profile.role === "admin" ? "/admin/profile" : "/user/profile"}
-                      className="block px-4 py-2 hover:bg-gray-200 transition"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      className="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 transition"
-                      onClick={handleLogout}
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          {/* Profile Button (Hidden on Landing/Login/Signup) */}
+          {!hideProfileRoutes.includes(location.pathname) && (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center bg-white text-blue-600 font-medium px-4 py-2 rounded-lg shadow-md 
+                           hover:bg-blue-700 hover:text-white transition-all focus:outline-none"
+              >
+                {profile.profilePic ? (
+                  <img
+                    src={profile.profilePic}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover mr-2"
+                  />
+                ) : (
+                  <FaUserCircle className="text-2xl mr-2" />
+                )}
+                <span>{profile.name}</span> {/* Display user's name */}
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg overflow-hidden z-10">
+                  <ul className="text-gray-700">
+                    <li>
+                      <Link
+                        to={profile.role === "admin" ? "/admin/profile" : "/user/profile"}
+                        className="block px-4 py-2 hover:bg-gray-200 transition"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        className="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 transition"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 };
