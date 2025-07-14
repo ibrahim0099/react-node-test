@@ -144,8 +144,8 @@ const UserLogPage = () => {
    * 
    * @param {Object} newFilters - Updated filter settings
    */
-  const applyFilters = (newFilters) => {
-    let result = [...logs];
+  const applyFilters = (newFilters, logsArray = logs) => {
+    let result = [...logsArray];
     
     // Apply role filter
     if (newFilters.role !== 'all') {
@@ -225,14 +225,12 @@ const UserLogPage = () => {
     }
     
     // User confirmed deletion
+    // Remove the log from the main logs array
     const updatedLogs = logs.filter(log => log.id !== logId);
-    
-    // Update state
     setLogs(updatedLogs);
-    setFilteredLogs(filteredLogs.filter(log => log.id !== logId));
-    
-    // Update localStorage
     localStorage.setItem('userLogs', JSON.stringify(updatedLogs));
+    // Re-apply filters to the updated logs
+    applyFilters(filters, updatedLogs);
     
     // Reset confirmation state
     setDeleteConfirm(null);
